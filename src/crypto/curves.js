@@ -1,4 +1,4 @@
-var elliptic = require('elliptic');
+const elliptic = require('elliptic');
 
 export default {
 
