@@ -10,6 +10,10 @@ export default {
     return bs58check.encode(new Buffer(n, 'hex'));
   },
 
+  decode: function (encoded, prefix) {
+    return bs58check.decode(encoded).slice(this.prefix[prefix].length);
+  },
+
   prefix: {
     /* size: 20 */
     ed25519_public_key_hash: [6, 161, 159], // tz1(36)
