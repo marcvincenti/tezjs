@@ -1,7 +1,11 @@
-import Account from './account.js';
+import Account from './account';
 import Curve from './crypto/curves';
+import Rpc from './rpc';
 
-export default {
+const tezjs = {
   account: Account,
-  curve: Curve
+  curve: Curve,
+  rpc: Rpc
 };
+
+export default tezjs;

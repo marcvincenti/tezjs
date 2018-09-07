@@ -43,6 +43,7 @@
     "bip39": "^2.5.0",
     "bs58check": "^2.1.2",
     "elliptic": "^6.4.1",
-    "libsodium-wrappers": "^0.7.3"
+    "libsodium-wrappers": "^0.7.3",
+    "xmlhttprequest": "^1.8.0"
   }
 }

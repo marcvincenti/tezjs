@@ -1,5 +1,5 @@
 # Build
-lib/
+dist/
 
 # Node dependencies
 package-lock.json
