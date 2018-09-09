@@ -2,7 +2,7 @@ const XMLHttpRequest = (typeof window !== 'undefined' && window.XMLHttpRequest) 
                         window.XMLHttpRequest
                       : require('xmlhttprequest').XMLHttpRequest;
 
-const defaultEndPoint = 'https://rpc.tezrpc.me';
+import provider from './provider';
 
 export default {
 
@@ -11,14 +11,13 @@ export default {
     oReq.onreadystatechange = function() {
       if (oReq.readyState === 4) {
         if (oReq.status === 200) {
-          const balance = parseInt(oReq.responseText.match(/[0-9]+/gi).pop());
-          callback(null, balance);
+          callback(null, JSON.parse(oReq.responseText));
         } else {
           callback(oReq.status, null);
         }
       }
     }
-    oReq.open('GET', defaultEndPoint + route, true);
+    oReq.open('GET', provider.provider + route, true);
     oReq.send(null);
   },
 

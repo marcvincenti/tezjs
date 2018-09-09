@@ -6,11 +6,10 @@ import lib from '../src/index.js';
 
 describe('Using rpc library', () => {
 
-  it('should return the balance of a wallet', (done) => {
-    const wallet = lib.account.create();
-    lib.rpc.getBalance(wallet.pkh, (err, res) => {
+  it('should return the head of main chain', (done) => {
+    lib.rpc.getHead((err, res) => {
       assert.isNull(err, 'balance request have failed');
-      assert.strictEqual(res, 0, 'balance should be 0');
+      // TODO: add integration tests
       done();
     });
   });
