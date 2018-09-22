@@ -1,4 +1,4 @@
-const defaultProvider = 'https://rpc.tezrpc.me';
+const defaultProvider =  'http://localhost:8732'; // 'https://rpc.tezrpc.me'
 
 export default {
 

@@ -56,9 +56,7 @@ describe('Using account library', () => {
     });
 
     it('should recreate a tz2 wallet', () => {
-      const generated = lib.account.create({
-        curve: lib.curve.Secp256k1
-      });
+      const generated = lib.account.create({ curve: 'Secp256k1' });
       const wallet = lib.account.fromPrivate(generated.sk);
       assert.isObject(wallet, 'wallet shouldn\'t be empty');
       assert.strictEqual('Secp256k1', wallet.curve, 'wrong curve used');
@@ -68,9 +66,7 @@ describe('Using account library', () => {
     });
 
     it('should recreate a tz3 wallet', () => {
-      const generated = lib.account.create({
-        curve: lib.curve.P256
-      });
+      const generated = lib.account.create({ curve: 'P256' });
       const wallet = lib.account.fromPrivate(generated.sk);
       assert.isObject(wallet, 'wallet shouldn\'t be empty');
       assert.strictEqual('P256', wallet.curve, 'wrong curve used');

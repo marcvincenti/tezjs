@@ -5,7 +5,7 @@ const assert = chai.assert;
 import lib from '../src/index.js';
 
 describe('Using account library', () => {
-  
+
   describe('when creating a wallet', () => {
 
     it('should return a tz1 wallet', () => {
@@ -23,9 +23,7 @@ describe('Using account library', () => {
     });
 
     it('should return a tz2 wallet', () => {
-      const wallet = lib.account.create({
-        curve: lib.curve.Secp256k1
-      });
+      const wallet = lib.account.create({ curve: 'Secp256k1' });
       assert.isObject(wallet, 'wallet shouldn\'t be empty');
       assert.isTrue(/^([a-z]+\s){14}[a-z]+$/.test(wallet.mnemonic),
         'mnemonic don\'t have required format');
@@ -39,9 +37,7 @@ describe('Using account library', () => {
     });
 
     it('should return a tz3 wallet', () => {
-      const wallet = lib.account.create({
-        curve: lib.curve.P256
-      });
+      const wallet = lib.account.create({ curve: 'P256' });
       assert.isObject(wallet, 'wallet shouldn\'t be empty');
       assert.isTrue(/^([a-z]+\s){14}[a-z]+$/.test(wallet.mnemonic),
         'mnemonic don\'t have required format');
