@@ -75,6 +75,15 @@ describe('Using account library', () => {
       assert.strictEqual(generated.pkh, wallet.pkh, 'wrong derived public key hash');
     });
 
+    it('should fail to recreate a wallet', () => {
+      try {
+        lib.account.fromPrivate('unknown');
+        assert.fail('no error thrown.');
+      } catch (e) {
+        assert.strictEqual('Incorrect secret provided!', e, 'wrong error thrown');
+      }
+    });
+
   });
 
 });

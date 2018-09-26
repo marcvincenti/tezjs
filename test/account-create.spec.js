@@ -50,6 +50,15 @@ describe('Using account library', () => {
         'address don\'t have required format');
     });
 
+    it('should fail to create a wallet', () => {
+      try {
+        lib.account.create({ curve: 'unknown' });
+        assert.fail('no error thrown.');
+      } catch (e) {
+        assert.strictEqual('Unknown curve unknown!', e, 'wrong error thrown');
+      }
+    });
+
   });
 
 });
