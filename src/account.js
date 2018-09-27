@@ -17,7 +17,7 @@ function generate_ED25519_wallet(secret) {
     sign: function (bytes, watermark) {
       let buf = hex.toBuffer(bytes);
       if (typeof watermark !== 'undefined') {
-        buf = buffer.merge(watermark, bytes);
+        buf = buffer.merge(watermark, buf);
       }
       const signature = sodium.crypto_sign_detached(black2B.hash(32, buf), kp.privateKey, 'uint8array');
       return {

@@ -1,5 +1,5 @@
 import req from './requests/req';
-import watermark from './utils/watermark'
+import watermark from './utils/watermark';
 
 export default {
 
@@ -60,6 +60,7 @@ export default {
                         callback(err, bytes);
                       } else {
                         console.log(operations);
+                        // Todo check for errors, then apply operations ;)
                       }
                     });
                   }
