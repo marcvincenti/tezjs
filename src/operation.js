@@ -57,10 +57,30 @@ export default {
                     operations.signature = sig.signature;
                     req.send(operations_route, [operations], function (err, operations) {
                       if (err) {
-                        callback(err, bytes);
+                        callback(err, operations);
                       } else {
-                        console.log(operations);
-                        // Todo check for errors, then apply operations ;)
+                        // verify operations
+                        let err = false;
+                        operations.forEach((batch) => {
+                          batch.contents.forEach((op) => {
+                            if (op.metadata.operation_result.status !== 'applied') {
+                              err = true;
+                              callback('operation error', batch);
+                            }
+                          });
+                        });
+                        if (!err) {
+                          req.send('/injection/operation', sig.bytes, function (err, res) {
+                            if (err) {
+                              callback(err, res);
+                            } else {
+                              callback(err, {
+                                hash: res,
+                                operations: operations
+                              })
+                            }
+                          });
+                        }
                       }
                     });
                   }

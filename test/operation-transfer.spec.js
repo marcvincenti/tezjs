@@ -4,7 +4,7 @@ const assert = chai.assert;
 
 import lib from '../src/index.js';
 
-describe('Using rpc library', () => {
+describe('Using operation library', () => {
 
   it('should transfer 1 tez', (done) => {
     const alphanet_sk = 'edsk4Jq8hUbvt7sg7SNo8i9Fmrg2MkpG8cPubPqhNc3vhm18ZfacTx';
@@ -13,7 +13,9 @@ describe('Using rpc library', () => {
     // transfer 1 tezzie
     lib.operation.transfer(wallet, wallet2.pkh, 1000000, null, (err, res) => {
       assert.isNull(err, 'transfer request have failed');
-      // TODO: add integration tests
+      assert.isObject(res, 'result shouldn\'t be empty');
+      assert.isNotNull(res.hash, 'result should contain a hash');
+      assert.isArray(res.operations, 'result should contain an operations array');
       done();
     });
   });

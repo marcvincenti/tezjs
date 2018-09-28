@@ -22,7 +22,7 @@ function generate_ED25519_wallet(secret) {
       const signature = sodium.crypto_sign_detached(black2B.hash(32, buf), kp.privateKey, 'uint8array');
       return {
         signature: base58.encode(signature, 'ed25519_signature'),
-        sbytes: bytes + buffer.toHex(signature)
+        bytes: bytes + buffer.toHex(signature)
       }
     },
     verify: function (signature, bytes) {
