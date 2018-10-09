@@ -1,4 +1,3 @@
-const sodium = require('libsodium-wrappers');
 const bip39 = require('bip39');
 
 import base58 from './utils/base58';
@@ -8,25 +7,25 @@ import curves from './crypto/curves';
 import hex from './utils/hex';
 
 function generate_ED25519_wallet(secret) {
-  const kp = sodium.crypto_sign_seed_keypair(secret);
+  const kp = curves.Ed25519.ec.keyFromSecret(secret);
   return {
     curve: 'Ed25519',
     sk: base58.encode(secret, 'ed25519_seed'),
-    pk: base58.encode(kp.publicKey, 'ed25519_public_key'),
-    pkh: base58.encode(black2B.hash(20, kp.publicKey), 'ed25519_public_key_hash'),
+    pk: base58.encode(kp.getPublic(), 'ed25519_public_key'),
+    pkh: base58.encode(black2B.hash(20, kp.getPublic()), 'ed25519_public_key_hash'),
     sign: function (bytes, watermark) {
       let buf = hex.toBuffer(bytes);
       if (typeof watermark !== 'undefined') {
         buf = buffer.merge(watermark, buf);
       }
-      const signature = sodium.crypto_sign_detached(black2B.hash(32, buf), kp.privateKey, 'uint8array');
+      const signature = kp.sign(black2B.hash(32, buf)).toBytes();
       return {
         signature: base58.encode(signature, 'ed25519_signature'),
         bytes: bytes + buffer.toHex(signature)
       }
     },
     verify: function (signature, bytes) {
-      return sodium.crypto_sign_verify_detached(signature, hex.toBuffer(bytes), kp.publicKey);
+      return kp.verify(hex.toBuffer(bytes), signature)
     }
   };
 }
@@ -42,7 +41,22 @@ function generate_Secp256k1_wallet(secret) {
     curve: 'Secp256k1',
     sk: base58.encode(keyPair.getPrivate().toBuffer(), 'secp256k1_secret_key'),
     pk: base58.encode(compressed_pub, 'secp256k1_public_key'),
-    pkh: base58.encode(black2B.hash(20, compressed_pub), 'secp256k1_public_key_hash')
+    pkh: base58.encode(black2B.hash(20, compressed_pub), 'secp256k1_public_key_hash'),
+    sign: function (bytes, watermark) {
+      let buf = hex.toBuffer(bytes);
+      if (typeof watermark !== 'undefined') {
+        buf = buffer.merge(watermark, buf);
+      }
+      const sigPair = keyPair.sign(black2B.hash(32, buf));
+      const signature = new Uint8Array([...sigPair.r.toArray(), ...sigPair.s.toArray()]);
+      return {
+        signature: base58.encode(signature, 'secp256k1_signature'),
+        bytes: bytes + buffer.toHex(signature)
+      }
+    },
+    verify: function (signature, bytes) {
+      return key.verify(hex.toBuffer(bytes), signature);
+    }
   };
 }
 
@@ -57,7 +71,22 @@ function generate_P256_wallet(secret) {
     curve: 'P256',
     sk: base58.encode(keyPair.getPrivate().toBuffer(), 'p256_secret_key'),
     pk: base58.encode(compressed_pub, 'p256_public_key'),
-    pkh: base58.encode(black2B.hash(20, compressed_pub), 'p256_public_key_hash')
+    pkh: base58.encode(black2B.hash(20, compressed_pub), 'p256_public_key_hash'),
+    sign: function (bytes, watermark) {
+      let buf = hex.toBuffer(bytes);
+      if (typeof watermark !== 'undefined') {
+        buf = buffer.merge(watermark, buf);
+      }
+      const sigPair = keyPair.sign(black2B.hash(32, buf));
+      const signature = new Uint8Array([...sigPair.r.toArray(), ...sigPair.s.toArray()]);
+      return {
+        signature: base58.encode(signature, 'p256_signature'),
+        bytes: bytes + buffer.toHex(signature)
+      }
+    },
+    verify: function (signature, bytes) {
+      return key.verify(hex.toBuffer(bytes), signature);
+    }
   };
 }
 

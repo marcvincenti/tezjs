@@ -3,7 +3,8 @@ const elliptic = require('elliptic');
 export default {
 
   Ed25519: {
-    type: 'eddsa'
+    type: 'eddsa',
+    ec: new elliptic.eddsa('ed25519')
   },
 
   Secp256k1: {
