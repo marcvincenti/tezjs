@@ -20,6 +20,8 @@ describe('Using account library', () => {
         'public_key don\'t have required format');
       assert.isTrue(/^tz1[a-km-zA-HJ-NP-Z1-9]{33}$/.test(wallet.pkh),
         'address don\'t have required format');
+      assert.isFunction(wallet.sign, 'wallet don\'t have a sign function');
+      assert.isFunction(wallet.verify, 'wallet don\'t have a verify function');
     });
 
     it('should return a tz2 wallet', () => {
@@ -34,6 +36,8 @@ describe('Using account library', () => {
         'public_key don\'t have required format');
       assert.isTrue(/^tz2[a-km-zA-HJ-NP-Z1-9]{33}$/.test(wallet.pkh),
         'address don\'t have required format');
+      assert.isFunction(wallet.sign, 'wallet don\'t have a sign function');
+      assert.isFunction(wallet.verify, 'wallet don\'t have a verify function');
     });
 
     it('should return a tz3 wallet', () => {
@@ -48,6 +52,8 @@ describe('Using account library', () => {
         'public_key don\'t have required format');
       assert.isTrue(/^tz3[a-km-zA-HJ-NP-Z1-9]{33}$/.test(wallet.pkh),
         'address don\'t have required format');
+      assert.isFunction(wallet.sign, 'wallet don\'t have a sign function');
+      assert.isFunction(wallet.verify, 'wallet don\'t have a verify function');
     });
 
     it('should fail to create a wallet', () => {
