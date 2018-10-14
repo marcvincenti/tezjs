@@ -8,7 +8,7 @@ describe('Using operation library', () => {
 
   const alphanet_sk = 'edsk4Jq8hUbvt7sg7SNo8i9Fmrg2MkpG8cPubPqhNc3vhm18ZfacTx';
 
-  /*it('should transfer 1 tez from a tz1 pkh', (done) => {
+  it('should transfer 1 tez from a tz1 pkh', (done) => {
     const wallet = lib.account.fromPrivate(alphanet_sk);
     const wallet2 = lib.account.create();
     // transfer 1 tezzie
@@ -49,6 +49,6 @@ describe('Using operation library', () => {
         done();
       });
     });
-  });*/
+  });
 
 });

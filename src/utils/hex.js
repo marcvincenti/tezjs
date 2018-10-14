@@ -1,9 +1,12 @@
 export default {
 
   toBuffer: function (bytes) {
-    return new Uint8Array(bytes.match(/[\da-f]{2}/gi).map(function (h) {
-      return parseInt(h, 16)
-    }));
+    const byteArray = bytes.match(/[\da-f]{2}/gi) || [];
+    return new Uint8Array(
+      byteArray.map(function (h) {
+        return parseInt(h, 16)
+      })
+    );
   }
 
 }
