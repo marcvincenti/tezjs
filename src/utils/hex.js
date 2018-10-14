@@ -1,4 +1,4 @@
-export default {
+module.exports = {
 
   toBuffer: function (bytes) {
     const byteArray = bytes.match(/[\da-f]{2}/gi) || [];

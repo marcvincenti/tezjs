@@ -1,4 +1,4 @@
-export default {
+module.exports = {
 
   /* size: 20 */
   ed25519_public_key_hash: [6, 161, 159], // tz1(36)

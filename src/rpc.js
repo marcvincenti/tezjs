@@ -3,7 +3,7 @@ import req from './requests/req';
 
 const addressBaseRoute = '/chains/main/blocks/head/context/contracts';
 
-export default {
+module.exports = {
 
   getBalance: function (address, callback) {
     const route = `${addressBaseRoute}/${address}/balance`;

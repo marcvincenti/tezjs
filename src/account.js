@@ -1,10 +1,11 @@
 const bip39 = require('bip39');
 
 import base58 from './utils/base58';
-import black2B from './crypto/blake2B';
 import buffer from './utils/buffer';
+import crypto from './crypto';
 import curves from './crypto/curves';
 import hex from './utils/hex';
+import watermark from './utils/watermark';
 
 function generate_ED25519_wallet_from_seed(secret) {
   const kp = curves.Ed25519.ec.keyFromSecret(secret);
@@ -12,12 +13,9 @@ function generate_ED25519_wallet_from_seed(secret) {
     generate_ED25519_wallet_from_public(kp),
     {
       sk: base58.encode(secret, 'ed25519_seed'),
-      sign: function (bytes, watermark) {
-        let buf = hex.toBuffer(bytes);
-        if (typeof watermark !== 'undefined') {
-          buf = buffer.merge(watermark, buf);
-        }
-        const signature = kp.sign(black2B.hash(32, buf)).toBytes();
+      sign: function (bytes, w = watermark.generic) {
+        const hash = crypto.hash(buffer.merge(w, hex.toBuffer(bytes)));
+        const signature = kp.sign(hash).toBytes();
         return {
           signature: base58.encode(signature, 'ed25519_signature'),
           bytes: bytes + buffer.toHex(signature)
@@ -32,14 +30,11 @@ function generate_ED25519_wallet_from_public(kp) {
   return {
     curve: 'Ed25519',
     pk: base58.encode(pk, 'ed25519_public_key'),
-    pkh: base58.encode(black2B.hash(20, pk), 'ed25519_public_key_hash'),
-    verify: function (signature, bytes, watermark) {
+    pkh: base58.encode(crypto.hash(pk, 20), 'ed25519_public_key_hash'),
+    verify: function (signature, bytes, w = watermark.generic) {
       const decoded_sig = base58.decode(signature, 'ed25519_signature');
-      let buf = hex.toBuffer(bytes);
-      if (typeof watermark !== 'undefined') {
-        buf = buffer.merge(watermark, buf);
-      }
-      return kp.verify(black2B.hash(32, buf), buffer.toHex(decoded_sig));
+      const hash = crypto.hash(buffer.merge(w, hex.toBuffer(bytes)));
+      return kp.verify(hash, buffer.toHex(decoded_sig));
     }
   };
 }
@@ -50,12 +45,9 @@ function generate_Secp256k1_wallet_from_seed(secret) {
     generate_Secp256k1_wallet_from_public(keyPair),
     {
       sk: base58.encode(keyPair.getPrivate().toBuffer(), 'secp256k1_secret_key'),
-      sign: function (bytes, watermark) {
-        let buf = hex.toBuffer(bytes);
-        if (typeof watermark !== 'undefined') {
-          buf = buffer.merge(watermark, buf);
-        }
-        const sigPair = keyPair.sign(black2B.hash(32, buf));
+      sign: function (bytes, w = watermark.generic) {
+        const hash = crypto.hash(buffer.merge(w, hex.toBuffer(bytes)));
+        const sigPair = keyPair.sign(hash);
         const signature = new Uint8Array([...sigPair.r.toArray(), ...sigPair.s.toArray()]);
         return {
           signature: base58.encode(signature, 'secp256k1_signature'),
@@ -75,14 +67,11 @@ function generate_Secp256k1_wallet_from_public(pub) {
   return {
     curve: 'Secp256k1',
     pk: base58.encode(compressed_pub, 'secp256k1_public_key'),
-    pkh: base58.encode(black2B.hash(20, compressed_pub), 'secp256k1_public_key_hash'),
-    verify: function (signature, bytes, watermark) {
+    pkh: base58.encode(crypto.hash(compressed_pub, 20), 'secp256k1_public_key_hash'),
+    verify: function (signature, bytes, w = watermark.generic) {
       const decoded_sig = base58.decode(signature, 'secp256k1_signature');
-      let buf = hex.toBuffer(bytes);
-      if (typeof watermark !== 'undefined') {
-        buf = buffer.merge(watermark, buf);
-      }
-      return pub.verify(black2B.hash(32, buf), {
+      const hash = crypto.hash(buffer.merge(w, hex.toBuffer(bytes)));
+      return pub.verify(hash, {
         r: new Uint8Array(decoded_sig.slice(0, 32)),
         s: new Uint8Array(decoded_sig.slice(32, 64))
       });
@@ -96,12 +85,9 @@ function generate_P256_wallet_from_seed(secret) {
     generate_P256_wallet_from_public(keyPair),
     {
       sk: base58.encode(keyPair.getPrivate().toBuffer(), 'p256_secret_key'),
-      sign: function (bytes, watermark) {
-        let buf = hex.toBuffer(bytes);
-        if (typeof watermark !== 'undefined') {
-          buf = buffer.merge(watermark, buf);
-        }
-        const sigPair = keyPair.sign(black2B.hash(32, buf));
+      sign: function (bytes, w = watermark.generic) {
+        const hash = crypto.hash(buffer.merge(w, hex.toBuffer(bytes)));
+        const sigPair = keyPair.sign(hash);
         const signature = new Uint8Array([...sigPair.r.toArray(), ...sigPair.s.toArray()]);
         return {
           signature: base58.encode(signature, 'p256_signature'),
@@ -121,14 +107,11 @@ function generate_P256_wallet_from_public(pub) {
   return {
     curve: 'P256',
     pk: base58.encode(compressed_pub, 'p256_public_key'),
-    pkh: base58.encode(black2B.hash(20, compressed_pub), 'p256_public_key_hash'),
-    verify: function (signature, bytes, watermark) {
+    pkh: base58.encode(crypto.hash(compressed_pub, 20), 'p256_public_key_hash'),
+    verify: function (signature, bytes, w = watermark.generic) {
       const decoded_sig = base58.decode(signature, 'p256_signature');
-      let buf = hex.toBuffer(bytes);
-      if (typeof watermark !== 'undefined') {
-        buf = buffer.merge(watermark, buf);
-      }
-      return pub.verify(black2B.hash(32, buf), {
+      const hash = crypto.hash(buffer.merge(w, hex.toBuffer(bytes)));
+      return pub.verify(hash, {
         r: new Uint8Array(decoded_sig.slice(0, 32)),
         s: new Uint8Array(decoded_sig.slice(32, 64))
       });
@@ -136,18 +119,18 @@ function generate_P256_wallet_from_public(pub) {
   };
 }
 
-export default {
+module.exports = {
 
   create: function (params) {
     const mnemonic = bip39.generateMnemonic(160);
     return this.fromMnemonic(mnemonic, params);
   },
 
-  fromMnemonic: function (mnemonic, params) {
-    let { passphrase, curve } = params || {};
+  fromMnemonic: function (mnemonic, params = {}) {
+    let { curve } = params;
     if (typeof curve == 'undefined') curve = 'Ed25519';
 
-    const seed = bip39.mnemonicToSeed(mnemonic, passphrase).slice(0, 32);
+    const seed = bip39.mnemonicToSeed(mnemonic, params.passphrase).slice(0, 32);
     let wallet;
     switch (curve) {
       case 'Ed25519':

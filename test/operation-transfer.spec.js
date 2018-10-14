@@ -21,7 +21,7 @@ describe('Using operation library', () => {
     });
   });
 
-  it('should transfer 1 tez from a tz2 pkh', (done) => {
+  /*it('should transfer 1 tez from a tz2 pkh', (done) => {
     const wallet = lib.account.fromPrivate(alphanet_sk);
     const wallet2 = lib.account.create({ curve: 'Secp256k1' });
     lib.operation.transfer(wallet, wallet2.pkh, 1000000, null, (err, res) => {
@@ -49,6 +49,6 @@ describe('Using operation library', () => {
         done();
       });
     });
-  });
+  });*/
 
 });

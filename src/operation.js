@@ -1,7 +1,6 @@
 import req from './requests/req';
-import watermark from './utils/watermark';
 
-export default {
+module.exports = {
 
   transfer: function (wallet, to, amount, params, callback) {
     let { fee, gasLimit, storageLimit } = params || {};
@@ -51,7 +50,7 @@ export default {
                   if (err) {
                     callback(err, bytes);
                   } else {
-                    const sig = wallet.sign(bytes, watermark.generic);
+                    const sig = wallet.sign(bytes);
                     const operations_route = '/chains/main/blocks/head/helpers/preapply/operations';
                     operations.protocol = head.protocol;
                     operations.signature = sig.signature;
@@ -70,7 +69,7 @@ export default {
                           });
                         });
                         if (!err) {
-                          req.send('/injection/operation', sig.bytes, function (err, res) {
+                          req.send('/injection/operation', sig.bytes , function (err, res) {
                             if (err) {
                               callback(err, res);
                             } else {

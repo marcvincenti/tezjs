@@ -1,6 +1,6 @@
 const elliptic = require('elliptic');
 
-export default {
+module.exports = {
 
   Ed25519: {
     type: 'eddsa',

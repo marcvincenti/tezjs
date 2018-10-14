@@ -1,4 +1,4 @@
-export default {
+module.exports = {
 
   merge: function(buf1 ,buf2) {
     const buf = new Uint8Array(buf1.length + buf2.length);

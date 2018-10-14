@@ -2,7 +2,7 @@ const bs58check = require('bs58check');
 
 import tezprefix from './prefix';
 
-export default {
+module.exports = {
 
   encode: function (payload, prefix) {
     const _prefix = tezprefix[prefix] || [];

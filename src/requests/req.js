@@ -4,7 +4,7 @@ const XMLHttpRequest = (typeof window !== 'undefined' && window.XMLHttpRequest) 
 
 import provider from './provider';
 
-export default {
+module.exports = {
 
   get: function (route, callback) {
     const oReq = new XMLHttpRequest();
