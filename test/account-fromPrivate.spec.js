@@ -49,6 +49,52 @@ describe('Using account library', () => {
 
   });
 
+  describe('when using encrypted secret keys from official tezos-client', () => {
+
+    it('should return a wallet with tz1 address', () => {
+      const password = 'test';
+      const esk = 'edesk1tN9p8BakkvZPz2DGAf9oAmxnhx5mFGSe7uVhNdz12Y7Mk2qNtzNaSE2pAwJA1pK9DUSQf1QV5fJeikP19U';
+      const pk = 'edpkvRVsYXVd4AGtuxtNvioCD8UjBYDPUUsi2mCD4ReKHtS1HL4Xmp';
+      const pkh = 'tz1eWafUkYUnvoW55ZKzcRnkfXhr6ua314wP';
+      const wallet = lib.account.fromPrivate(esk, {password: password});
+      assert.isObject(wallet, 'wallet shouldn\'t be empty');
+      assert.strictEqual('Ed25519', wallet.curve, 'wrong curve used');
+      assert.strictEqual(pk, wallet.pk, 'wrong derived public key');
+      assert.strictEqual(pkh, wallet.pkh, 'wrong derived public key hash');
+      assert.isFunction(wallet.sign, 'wallet don\'t have a sign function');
+      assert.isFunction(wallet.verify, 'wallet don\'t have a verify function');
+    });
+
+    it('should return a wallet with tz2 address', () => {
+      const password = 'test';
+      const esk = 'spesk28ioM6QyinG5zKgNyY8de4m4hsMgVAPLfqPkZAuxkQVQJJkK6BexdPv9riRqdQp21FKRfF6Jnd9xdZUZHde';
+      const pk = 'sppk7breTgoqRQGkE6j4touN5f3rUZ3UNhhuaKMFJ6zmGBE5giC2qqy';
+      const pkh = 'tz2TvHBaQfLVB8XMGcENUcLeHfn9NCuegMcJ';
+      const wallet = lib.account.fromPrivate(esk, {password: password});
+      assert.isObject(wallet, 'wallet shouldn\'t be empty');
+      assert.strictEqual('Secp256k1', wallet.curve, 'wrong curve used');
+      assert.strictEqual(pk, wallet.pk, 'wrong derived public key');
+      assert.strictEqual(pkh, wallet.pkh, 'wrong derived public key hash');
+      assert.isFunction(wallet.sign, 'wallet don\'t have a sign function');
+      assert.isFunction(wallet.verify, 'wallet don\'t have a verify function');
+    });
+
+    it('should return a wallet with tz3 address', () => {
+      const password = 'test';
+      const esk = 'p2esk243JjKQ21dqmjDYxBxR5LQer6fm2KVWLXLoFPQ2egyJ5zPRh82Z95uCwPghynXqDRdoF5X8zFQodsvkL8EK';
+      const pk = 'p2pk65G5s7jnHhfqXHwyirQMtxoS7bZFt7L7zZDcLCHwPsnzPByE52h';
+      const pkh = 'tz3VvJiZD4Ly11QVPTF9NMmQQisPRcXt44bc';
+      const wallet = lib.account.fromPrivate(esk, {password: password});
+      assert.isObject(wallet, 'wallet shouldn\'t be empty');
+      assert.strictEqual('P256', wallet.curve, 'wrong curve used');
+      assert.strictEqual(pk, wallet.pk, 'wrong derived public key');
+      assert.strictEqual(pkh, wallet.pkh, 'wrong derived public key hash');
+      assert.isFunction(wallet.sign, 'wallet don\'t have a sign function');
+      assert.isFunction(wallet.verify, 'wallet don\'t have a verify function');
+    });
+
+  });
+
   describe('when using secret keys from this tezos-client', () => {
 
     it('should recreate a tz1 wallet', () => {

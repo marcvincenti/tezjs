@@ -1,4 +1,6 @@
 const bip39 = require('bip39');
+const pbkdf2 = require('pbkdf2');
+const sodium = require('libsodium-wrappers');
 
 import base58 from './utils/base58';
 import buffer from './utils/buffer';
@@ -7,12 +9,33 @@ import curves from './crypto/curves';
 import hex from './utils/hex';
 import watermark from './utils/watermark';
 
-function generate_ED25519_wallet_from_seed(secret) {
+function decrypt_seed(bytes, password) {
+  const salt = bytes.slice(0, 8);
+  const encrypted_seed = bytes.slice(8);
+  const key = pbkdf2.pbkdf2Sync(password, salt, 32768, 32, 'sha512');
+  try {
+    return sodium.crypto_secretbox_open_easy(encrypted_seed, new Uint8Array(24), new Uint8Array(key));
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
+
+function encrypt_seed(seed, password) {
+  const salt = sodium.randombytes_buf(8);
+  const key = pbkdf2.pbkdf2Sync(password, new Buffer(salt), 32768, 32, 'sha512');
+  const encrypted_seed = sodium.crypto_secretbox_easy(seed, new Uint8Array(24), new Uint8Array(key));
+  return buffer.merge(salt, encrypted_seed);
+}
+
+function generate_ED25519_wallet_from_seed(secret, params) {
+  const { password } = params;
   const kp = curves.Ed25519.ec.keyFromSecret(secret);
   return Object.assign(
     generate_ED25519_wallet_from_public(kp),
     {
-      sk: base58.encode(secret, 'ed25519_seed'),
+      sk: password ? base58.encode(encrypt_seed(secret, password), 'ed25519_encrypted_seed')
+                   : base58.encode(secret, 'ed25519_seed'),
       sign: function (bytes, w = watermark.generic) {
         const hash = crypto.hash(buffer.merge(w, hex.toBuffer(bytes)));
         const signature = kp.sign(hash).toBytes();
@@ -39,12 +62,14 @@ function generate_ED25519_wallet_from_public(kp) {
   };
 }
 
-function generate_Secp256k1_wallet_from_seed(secret) {
+function generate_Secp256k1_wallet_from_seed(secret, params) {
+  const { password } = params;
   const keyPair = curves.Secp256k1.ec.keyFromPrivate(secret);
   return Object.assign(
     generate_Secp256k1_wallet_from_public(keyPair),
     {
-      sk: base58.encode(keyPair.getPrivate().toBuffer(), 'secp256k1_secret_key'),
+      sk: password ? base58.encode(encrypt_seed(keyPair.getPrivate().toBuffer(), password), 'secp256k1_encrypted_secret_key')
+                   : base58.encode(keyPair.getPrivate().toBuffer(), 'secp256k1_secret_key'),
       sign: function (bytes, w = watermark.generic) {
         const hash = crypto.hash(buffer.merge(w, hex.toBuffer(bytes)));
         const sigPair = keyPair.sign(hash);
@@ -79,12 +104,14 @@ function generate_Secp256k1_wallet_from_public(pub) {
   };
 }
 
-function generate_P256_wallet_from_seed(secret) {
+function generate_P256_wallet_from_seed(secret, params) {
+  const { password } = params;
   const keyPair = curves.P256.ec.keyFromPrivate(secret);
   return Object.assign(
     generate_P256_wallet_from_public(keyPair),
     {
-      sk: base58.encode(keyPair.getPrivate().toBuffer(), 'p256_secret_key'),
+      sk: password ? base58.encode(encrypt_seed(keyPair.getPrivate().toBuffer(), password), 'p256_encrypted_secret_key')
+                   : base58.encode(keyPair.getPrivate().toBuffer(), 'p256_secret_key'),
       sign: function (bytes, w = watermark.generic) {
         const hash = crypto.hash(buffer.merge(w, hex.toBuffer(bytes)));
         const sigPair = keyPair.sign(hash);
@@ -134,13 +161,13 @@ module.exports = {
     let wallet;
     switch (curve) {
       case 'Ed25519':
-        wallet = generate_ED25519_wallet_from_seed(seed);
+        wallet = generate_ED25519_wallet_from_seed(seed, params);
         break;
       case 'Secp256k1':
-        wallet = generate_Secp256k1_wallet_from_seed(seed);
+        wallet = generate_Secp256k1_wallet_from_seed(seed, params);
         break;
       case 'P256':
-        wallet = generate_P256_wallet_from_seed(seed);
+        wallet = generate_P256_wallet_from_seed(seed, params);
         break;
       default:
         throw `Unknown curve ${curve}!`;
@@ -149,16 +176,40 @@ module.exports = {
     return wallet;
   },
 
-  fromPrivate: function (sk) {
+  fromPrivate: function (sk, params = {}) {
     if (/^edsk[a-km-zA-HJ-NP-Z1-9]{50}$/.test(sk)) {
       const seed = base58.decode(sk, 'ed25519_seed');
-      return generate_ED25519_wallet_from_seed(seed);
+      return generate_ED25519_wallet_from_seed(seed, params);
+    } else if (/^edesk[a-km-zA-HJ-NP-Z1-9]{83}$/.test(sk)) {
+      const { password } = params;
+      const seed = decrypt_seed(
+        base58.decode(sk, 'ed25519_encrypted_seed'),
+        password
+      );
+      if (seed) return generate_ED25519_wallet_from_seed(seed, params);
+      return {};
     } else if (/^spsk[a-km-zA-HJ-NP-Z1-9]{50}$/.test(sk)) {
       const seed = base58.decode(sk, 'secp256k1_secret_key');
-      return generate_Secp256k1_wallet_from_seed(seed);
+      return generate_Secp256k1_wallet_from_seed(seed, params);
+    } else if (/^spesk[a-km-zA-HJ-NP-Z1-9]{83}$/.test(sk)) {
+      const { password } = params;
+      const seed = decrypt_seed(
+        base58.decode(sk, 'secp256k1_encrypted_secret_key'),
+        password
+      );
+      if (seed) return generate_Secp256k1_wallet_from_seed(seed, params);
+      return {};
     } else if (/^p2sk[a-km-zA-HJ-NP-Z1-9]{50}$/.test(sk)) {
       const seed = base58.decode(sk, 'p256_secret_key');
-      return generate_P256_wallet_from_seed(seed);
+      return generate_P256_wallet_from_seed(seed, params);
+    } else if (/^p2esk[a-km-zA-HJ-NP-Z1-9]{83}$/.test(sk)) {
+      const { password } = params;
+      const seed = decrypt_seed(
+        base58.decode(sk, 'p256_encrypted_secret_key'),
+        password
+      );
+      if (seed) return generate_P256_wallet_from_seed(seed, params);
+      return {};
     } else {
       throw `Incorrect secret provided!`;
     }
